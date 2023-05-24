@@ -1,9 +1,16 @@
 import os
 import PyPDF2
 import shutil
+from remove_digit import delete_native,remove_digit
+pasta = '15'
 
-input = 'C:\\Users\\gab36\\OneDrive\\Documentos\\Development\\tratapdfAFD\\AFD_CGU_AUDITORIA_0015'
-tratado = 'C:\\Users\\gab36\\OneDrive\\Documentos\\Development\\tratapdfAFD\\AFD_CGU_AUDITORIA_0015_TRATADO\\'
+
+input = f'C:\\Users\\gab36\\OneDrive\\Documentos\\Development\\tratapdfAFD\\AFD_CGU_AUDITORIA_00{pasta}'
+tratado = f'C:\\Users\\gab36\\OneDrive\\Documentos\\Development\\tratapdfAFD\\AFD_CGU_AUDITORIA_00{pasta}_TRATADO\\'
+fa = 0
+
+delete_native(input)
+remove_digit(input)
 
 def trata_arq(input):
     pdf_size = os.path.getsize(input)
@@ -29,11 +36,26 @@ def trata_arq(input):
                 part_path = f'{tratado}{separated_filename}'
                 with open(part_path, 'wb') as part_file:
                     pdf_writer.write(part_file)
-            print(f'Arquivo {ext} separado em {num_parts} partes! Movidos para a pasta de tratados.')
+            print(f'Arquivo {ext} separado em {num_parts} partes!')
     else:
         shutil.copy2(input, tratado)
-        print(f'Arquivo {ext} é menor que 120mb! Movido para a pasta de tratados.')
+        print(f'Arquivo {ext} < 120mb!')
 
+def is_ocr_pdf(file_path):
+    with open(file_path, 'rb') as file:
+        reader = PyPDF2.PdfReader(file)
+        if '/Font' in reader.pages[0].keys():
+            print(f'FALSO: {file_path}!!!!!')
+            fa += 1
 
 for a in os.listdir(input):
+    is_ocr_pdf(input + f'\\{a}')
     trata_arq(input + f'\\{a}')
+
+if fa > 0:
+    print('ATENÇÃO! Há um ou mais arquivos sem OCR atribuído!')
+else:
+    print('SUCESSO! Todos os arquivos estão no devido formato OCR.')
+
+print(f'FINALIZADO COM ÊXITO! Total de {len(os.listdir(input))} arquivos processados. Resultou em {len(os.listdir(tratado))} arquivos tratados!')
+
